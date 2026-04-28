@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operação Noite Oficial 1986 — HTML + CSS + JS + React + Node + Angular + TypeScript</title>
+
+<!-- Google Fonts (CSS) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;600;700&family=Exo+2:wght@200;400;700;900&display=swap" rel="stylesheet">
+
+<!-- React + Babel (for inline JSX demo) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+
+<style>
+/* =========================================================
+   GLOBAL — HTML + CSS
+   ========================================================= */
+:root {
+  --green:  #00ff88;
+  --amber:  #ffb800;
+  --red:    #ff3a3a;
+  --muted:  #006633;
+  --border: #003318;
+  --panel:  #020d06;
+  --bg:     #010804;
+  --text:   #00cc66;
+  --purple: #cc88ff;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Share Tech Mono', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* CRT scanlines */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px);
+  pointer-events: none; z-index: 9999;
+}
+
+/* Scroll */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border); }
+
+@keyframes blink   { 0%,100%{opacity:1} 50%{opacity:0.2} }
+@keyframes sweep   { 0%,100%{transform:translateX(-100%)} 50%{transform:translateX(100%)} }
+@keyframes pulsebg { 0%,100%{box-shadow:0 0 0 0 rgba(0,255,136,.4)} 50%{box-shadow:0 0 0 8px rgba(0,255,136,0)} }
+@keyframes slideIn { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes blipFade{ 0%{opacity:1;r:5} 60%{opacity:.4;r:3} 100%{opacity:0;r:2} }
+
+.blink { animation: blink 1.2s step-end infinite; }
+
+/* ── TECH BANNER ─────────────────────────────────────────── */
+.tech-banner {
+  background: #010d05;
+  border-bottom: 1px solid var(--border);
+  padding: 6px 1.5rem;
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+}
+.tech-chip {
+  font-size: .55rem; letter-spacing: 1px; padding: 3px 10px;
+  border: 1px solid var(--border); color: var(--muted);
+  transition: all .2s; cursor: default;
+}
+.tech-chip:hover { border-color: var(--green); color: var(--green); }
+.tech-chip.active { border-color: var(--green); color: var(--green); background: rgba(0,255,136,.05); }
+.tech-sep { color: var(--border); font-size: .7rem; }
+
+/* ── HEADER ──────────────────────────────────────────────── */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .75rem 1.5rem; background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  position: relative; overflow: hidden; flex-wrap: wrap; gap: .75rem;
+}
+.header::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg,transparent,var(--green),transparent);
+  animation: sweep 4s ease-in-out infinite;
+}
+.header-left { display: flex; align-items: center; gap: 1rem; }
+.badge {
+  width: 50px; height: 50px; border-radius: 50%;
+  border: 2px solid var(--green);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: 'Rajdhani',sans-serif; font-weight: 700; font-size: 10px;
+  color: var(--green); line-height: 1.2; flex-shrink: 0;
+  animation: pulsebg 2s ease-in-out infinite;
+}
+.header h1 {
+  font-family: 'Exo 2', sans-serif; font-weight: 900;
+  font-size: 1.1rem; letter-spacing: 4px; color: var(--green);
+}
+.header-sub { font-size: .5rem; letter-spacing: 2px; color: var(--muted); margin-top: 2px; }
+.header-right { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+.stat { display: flex; flex-direction: column; align-items: flex-end; }
+.stat-label { font-size: .48rem; letter-spacing: 2px; color: var(--muted); }
+.stat-val   { font-size: .85rem; color: var(--green); }
+.stat-val.red    { color: var(--red); }
+.stat-val.amber  { color: var(--amber); }
+.stat-val.purple { color: var(--purple); }
+
+/* ── MAIN LAYOUT ─────────────────────────────────────────── */
+.main {
+  display: grid;
+  grid-template-columns: 300px 1fr 300px;
+  min-height: calc(100vh - 130px);
+}
+@media (max-width: 1000px) {
+  .main { grid-template-columns: 1fr; }
+}
+
+/* ── PANELS ──────────────────────────────────────────────── */
+.left-panel  { border-right: 1px solid var(--border); background: var(--panel); overflow-y: auto; }
+.center-panel{ display: flex; flex-direction: column; background: radial-gradient(ellipse at center, #011a0a 0%, var(--bg) 70%); }
+.right-panel { border-left: 1px solid var(--border); background: var(--panel); padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; }
+
+.section-hd {
+  font-size: .55rem; letter-spacing: 3px; color: var(--muted);
+  text-transform: uppercase; border-bottom: 1px solid var(--border);
+  padding-bottom: .5rem; margin-bottom: 1rem;
+}
+
+/* ── TIMELINE ────────────────────────────────────────────── */
+.timeline-wrap { padding: 1.5rem; }
+.timeline { border-left: 1px solid var(--border); margin-left: 6px; }
+.tl-item {
+  display: grid; grid-template-columns: 48px 1fr; gap: 10px;
+  padding: 10px 10px 10px 14px; margin-left: -1px;
+  border-left: 2px solid transparent;
+  cursor: pointer; transition: all .2s; position: relative;
+  background: none; border-top: none; border-right: none; border-bottom: none;
+  width: 100%; text-align: left; color: inherit; font-family: inherit;
+}
+.tl-item:hover { background: rgba(0,255,136,.04); border-left-color: var(--green); }
+.tl-item::before {
+  content: ''; position: absolute; left: -6px; top: 14px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #004422; border: 1px solid var(--border); transition: all .2s;
+}
+.tl-item:hover::before,.tl-item.active::before { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.tl-item.critical::before { background: var(--red) !important; border-color: var(--red); }
+.tl-item.high::before     { background: var(--amber) !important; border-color: var(--amber); }
+.tl-time { font-size: .68rem; color: var(--amber); padding-top: 2px; }
+.tl-title { font-family: 'Rajdhani',sans-serif; font-weight: 600; font-size: .82rem; color: var(--green); margin-bottom: 3px; }
+.tl-desc  { font-size: .6rem; color: var(--muted); line-height: 1.4; }
+
+/* ── STATS GRID ──────────────────────────────────────────── */
+.stats-wrap { padding: 0 1.5rem 1.5rem; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stat-card  { border: 1px solid var(--border); padding: 10px 8px; text-align: center; }
+.stat-num   { display: block; font-family: 'Exo 2',sans-serif; font-weight: 200; font-size: 1.7rem; line-height: 1; }
+.stat-lbl   { display: block; font-size: .5rem; letter-spacing: 1px; color: var(--muted); margin-top: 3px; text-transform: uppercase; }
+.stat-num.green  { color: var(--green); }
+.stat-num.amber  { color: var(--amber); }
+.stat-num.red    { color: var(--red); }
+.stat-num.purple { color: var(--purple); }
+
+/* ── RADAR (SVG + JavaScript) ────────────────────────────── */
+.radar-area { flex: 1; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+.radar-container { position: relative; width: min(380px, 100%); aspect-ratio: 1; }
+.radar-svg { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 30px rgba(0,255,136,.07); }
+.radar-label { text-align: center; font-size: .52rem; letter-spacing: 3px; color: var(--muted); margin-bottom: .75rem; }
+.radar-legend { display: flex; gap: 1rem; justify-content: center; font-size: .58rem; color: var(--muted); flex-wrap: wrap; margin-top: .75rem; }
+.radar-legend span { display: flex; align-items: center; gap: 5px; }
+.dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; }
+
+/* ── INFO BAR ────────────────────────────────────────────── */
+.info-bar {
+  border-top: 1px solid var(--border); background: var(--panel);
+  padding: .75rem 1.5rem; display: flex; gap: 1.5rem; flex-wrap: wrap;
+}
+.info-item { display: flex; flex-direction: column; gap: 2px; }
+.info-label { font-size: .48rem; letter-spacing: 2px; color: var(--muted); }
+.info-val   { font-size: .8rem; color: var(--text); }
+.info-val.red   { color: var(--red); }
+.info-val.amber { color: var(--amber); }
+
+/* ── TABS ────────────────────────────────────────────────── */
+.tabs { display: flex; border-bottom: 1px solid var(--border); }
+.tab-btn {
+  background: none; border: none; border-bottom: 2px solid transparent;
+  color: var(--muted); font-family: 'Share Tech Mono',monospace;
+  font-size: .58rem; letter-spacing: 2px; padding: 7px 10px;
+  cursor: pointer; transition: all .2s; text-transform: uppercase;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--green); border-bottom-color: var(--green); }
+.tab-panel { display: none; padding-top: .75rem; }
+.tab-panel.active { display: block; }
+
+/* ── EVENT LOG ───────────────────────────────────────────── */
+.log-box {
+  border: 1px solid var(--border); height: 220px; overflow-y: auto;
+  padding: 8px; font-size: .62rem; line-height: 1.9; background: rgba(0,0,0,.25);
+}
+.log-entry { color: #005522; }
+.log-entry.alert    { color: #bb7700; }
+.log-entry.critical { color: #cc2222; }
+.log-entry.confirm  { color: #009944; }
+.log-ts { color: #003311; margin-right: 8px; }
+
+/* ── HYPOTHESIS BAR ──────────────────────────────────────── */
+.hyp-list { display: flex; flex-direction: column; gap: 10px; }
+.hyp-item { }
+.hyp-row  { display: flex; justify-content: space-between; font-size: .65rem; margin-bottom: 4px; }
+.hyp-title-t { color: #009944; }
+.hyp-pct { }
+.hyp-bar { height: 4px; background: #002211; overflow: hidden; }
+.hyp-fill { height: 100%; transition: width 1s ease; }
+
+/* ── WITNESS CARDS ───────────────────────────────────────── */
+.witness-list { display: flex; flex-direction: column; gap: 10px; }
+.witness-card { border: 1px solid var(--border); padding: 12px; transition: border-color .2s; }
+.witness-card:hover { border-color: #005522; }
+.w-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.w-avatar {
+  width: 40px; height: 40px; border-radius: 50%; background: var(--border);
+  border: 1px solid var(--muted); display: flex; align-items: center; justify-content: center;
+  font-family: 'Rajdhani',sans-serif; font-weight: 700; font-size: .72rem; color: var(--text); flex-shrink: 0;
+}
+.w-name  { font-family: 'Rajdhani',sans-serif; font-weight: 600; font-size: .82rem; color: var(--green); }
+.w-rank  { font-size: .58rem; color: var(--amber); margin-top: 2px; }
+.w-role  { font-size: .56rem; color: var(--muted); margin-top: 1px; }
+.w-cred  { font-size: .5rem; letter-spacing: 2px; padding: 2px 8px; border: 1px solid; white-space: nowrap; flex-shrink: 0; }
+.w-cred.military   { color: var(--green); border-color: var(--green); }
+.w-cred.government { color: var(--amber); border-color: var(--amber); }
+.w-quote { font-size: .65rem; color: #008844; line-height: 1.6; font-style: italic; border-left: 2px solid var(--border); padding-left: 10px; }
+.w-year  { font-size: .52rem; color: #004422; text-align: right; margin-top: 4px; }
+
+/* ── MODAL ───────────────────────────────────────────────── */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.88); z-index: 1000;
+  align-items: center; justify-content: center; padding: 1rem;
+}
+.overlay.open { display: flex; }
+.modal {
+  background: var(--panel); border: 1px solid var(--green);
+  max-width: 580px; width: 100%; padding: 1.75rem;
+  box-shadow: 0 0 50px rgba(0,255,136,.15);
+  animation: slideIn .2s ease-out;
+}
+.modal-pre  { font-size: .52rem; letter-spacing: 3px; color: var(--muted); margin-bottom: 1rem; }
+.modal-hd   { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; }
+.modal-title{ font-family: 'Exo 2',sans-serif; font-weight: 700; font-size: 1.2rem; color: var(--green); margin-bottom: .4rem; }
+.modal-time { font-size: .72rem; color: var(--amber); }
+.modal-close{
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  padding: 4px 10px; font-size: .65rem; font-family: inherit; cursor: pointer;
+  transition: all .2s; flex-shrink: 0;
+}
+.modal-close:hover { border-color: var(--red); color: var(--red); }
+.modal-lbl  { font-size: .5rem; letter-spacing: 3px; color: #004422; margin-bottom: .35rem; }
+.modal-text { font-size: .72rem; color: #009944; line-height: 1.7; margin-bottom: 1rem; }
+.modal-muted{ color: var(--muted); }
+.modal-foot {
+  border-top: 1px solid var(--border); padding-top: 1rem;
+  display: flex; gap: 2rem; flex-wrap: wrap;
+}
+.modal-fitem{ display: flex; flex-direction: column; gap: 3px; }
+.modal-flbl { font-size: .48rem; letter-spacing: 2px; color: #004422; }
+.modal-fval { font-size: .7rem; color: var(--text); }
+
+/* ── CLASSIFICATION ──────────────────────────────────────── */
+.classification { border: 1px solid var(--border); padding: 10px; margin-top: auto; }
+.class-status { font-size: .62rem; color: var(--amber); margin-bottom: 5px; }
+.class-text   { font-size: .58rem; color: var(--muted); line-height: 1.7; }
+
+/* ── REACT BADGE ─────────────────────────────────────────── */
+#react-stats-root { padding: 1.5rem 1.5rem 0; }
+.react-badge {
+  display: inline-block; font-size: .48rem; letter-spacing: 2px;
+  color: #61dafb; border: 1px solid #61dafb33; padding: 2px 8px; margin-bottom: .75rem;
+}
+</style>
+</head>
+<body>
+
+<!-- ── TECH STACK BANNER ─────────────────────────────────────── -->
+<div class="tech-banner">
+  <span style="font-size:.5rem;letter-spacing:2px;color:#004422;">STACK:</span>
+  <span class="tech-chip active">HTML5</span>
+  <span class="tech-sep">+</span>
+  <span class="tech-chip active">CSS3</span>
+  <span class="tech-sep">+</span>
+  <span class="tech-chip active">JavaScript</span>
+  <span class="tech-sep">+</span>
+  <span class="tech-chip active" style="color:#61dafb;border-color:#61dafb">React 18</span>
+  <span class="tech-sep">+</span>
+  <span class="tech-chip active" style="color:#68a063;border-color:#68a063">Node.js</span>
+  <span class="tech-sep">+</span>
+  <span class="tech-chip active" style="color:#dd1b16;border-color:#dd1b16">Angular</span>
+  <span class="tech-sep">+</span>
+  <span class="tech-chip active" style="color:#3178c6;border-color:#3178c6">TypeScript</span>
+</div>
+
+<!-- ── HEADER ────────────────────────────────────────────────── -->
+<header class="header">
+  <div class="header-left">
+    <div class="badge">FAB<br>1986</div>
+    <div>
+      <h1>OPERAÇÃO NOITE OFICIAL</h1>
+      <div class="header-sub">FORÇA AÉREA BRASILEIRA — CASO OVNI — 19 MAI 1986 — SP / RJ / MG</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="stat"><span class="stat-label">OBJETOS</span><span class="stat-val red blink" id="objCount">21</span></div>
+    <div class="stat"><span class="stat-label">CAÇAS</span><span class="stat-val amber">13</span></div>
+    <div class="stat"><span class="stat-label">ESTADOS</span><span class="stat-val purple">3</span></div>
+    <div class="stat"><span class="stat-label">HORA</span><span class="stat-val" id="clockDisplay">--:--:--</span></div>
+  </div>
+</header>
+
+<!-- ── MAIN ──────────────────────────────────────────────────── -->
+<div class="main">
+
+  <!-- LEFT: TIMELINE -->
+  <aside class="left-panel">
+    <div class="timeline-wrap">
+      <div class="section-hd">▶ Cronologia do Evento</div>
+      <div class="timeline" id="timeline"></div>
+    </div>
+
+    <!-- React-rendered stats section -->
+    <div id="react-stats-root">
+      <div style="font-size:.5rem;letter-spacing:2px;color:#004422;margin-bottom:4px">CARREGANDO REACT…</div>
+    </div>
+  </aside>
+
+  <!-- CENTER: RADAR (JavaScript animated SVG) -->
+  <main class="center-panel">
+    <div class="radar-area">
+      <div>
+        <div class="radar-label">SISTEMA DE RADAR PRIMÁRIO — CINDACTA — JavaScript + SVG</div>
+        <div class="radar-container">
+          <svg class="radar-svg" id="radarSvg" viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="rBg" cx="50%" cy="50%" r="50%">
+                <stop offset="0%"   stop-color="#011a0a"/>
+                <stop offset="100%" stop-color="#010804"/>
+              </radialGradient>
+              <radialGradient id="sweepG" cx="100%" cy="50%" r="100%">
+                <stop offset="0%"   stop-color="#00ff88" stop-opacity="0.9"/>
+                <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+
+            <circle cx="210" cy="210" r="208" fill="url(#rBg)"/>
+            <circle cx="210" cy="210" r="60"  fill="none" stroke="#003318" stroke-width="0.5"/>
+            <circle cx="210" cy="210" r="110" fill="none" stroke="#003318" stroke-width="0.5"/>
+            <circle cx="210" cy="210" r="160" fill="none" stroke="#003318" stroke-width="0.5"/>
+            <circle cx="210" cy="210" r="200" fill="none" stroke="#003318" stroke-width="0.5"/>
+            <line x1="10" y1="210" x2="410" y2="210" stroke="#003318" stroke-width="0.5"/>
+            <line x1="210" y1="10" x2="210" y2="410" stroke="#003318" stroke-width="0.5"/>
+            <line x1="66" y1="66" x2="354" y2="354" stroke="#003318" stroke-width="0.3" opacity="0.5"/>
+            <line x1="354" y1="66" x2="66" y2="354" stroke="#003318" stroke-width="0.3" opacity="0.5"/>
+
+            <text x="206" y="14"  font-size="9" fill="#004422" font-family="Share Tech Mono,monospace">N</text>
+            <text x="206" y="410" font-size="9" fill="#004422" font-family="Share Tech Mono,monospace">S</text>
+            <text x="402" y="214" font-size="9" fill="#004422" font-family="Share Tech Mono,monospace">L</text>
+            <text x="8"   y="214" font-size="9" fill="#004422" font-family="Share Tech Mono,monospace">O</text>
+
+            <text x="155" y="90"  font-size="9" fill="#005522" font-family="Share Tech Mono,monospace">SP</text>
+            <text x="262" y="82"  font-size="9" fill="#005522" font-family="Share Tech Mono,monospace">RJ</text>
+            <text x="100" y="185" font-size="9" fill="#005522" font-family="Share Tech Mono,monospace">MG</text>
+            <text x="180" y="178" font-size="7" fill="#004422" font-family="Share Tech Mono,monospace">Vale do</text>
+            <text x="178" y="188" font-size="7" fill="#004422" font-family="Share Tech Mono,monospace">Paraíba</text>
+
+            <!-- Sweep group (rotated by JS) -->
+            <g id="sweepGroup">
+              <path d="M210 210 L410 210 A200 200 0 0 0 370 90 Z" fill="url(#sweepG)" opacity="0.18"/>
+              <line x1="210" y1="210" x2="410" y2="210" stroke="#00ff88" stroke-width="1" opacity="0.5"/>
+            </g>
+
+            <!-- Blips (rendered by JS) -->
+            <g id="blipsGroup"></g>
+
+            <!-- Jet trails -->
+            <path d="M210 310 Q248 265 250 140" fill="none" stroke="#ffb800" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+            <path d="M240 320 Q278 270 278 155" fill="none" stroke="#ffb800" stroke-width="0.8" stroke-dasharray="4 3" opacity="0.35"/>
+
+            <!-- Animated jets -->
+            <polygon id="jet1" points="210,305 204,318 216,318" fill="#ffb800" opacity="0.9"/>
+            <polygon id="jet2" points="240,315 234,328 246,328" fill="#ffb800" opacity="0.6"/>
+
+            <circle cx="210" cy="210" r="3"  fill="#00ff88" opacity="0.9"/>
+            <circle cx="210" cy="210" r="10" fill="none" stroke="#00ff88" stroke-width="0.5" opacity="0.4"/>
+          </svg>
+        </div>
+        <div class="radar-legend">
+          <span><span class="dot" style="background:#00ff88"></span> OVNI rastreado</span>
+          <span><span class="dot" style="background:#ffb800"></span> Vetor confirmado</span>
+          <span><span class="dot" style="background:#ff3a3a"></span> Prioridade máxima</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-bar">
+      <div class="info-item"><span class="info-label">VELOCIDADE MÁX.</span><span class="info-val">&gt; 2.500 km/h</span></div>
+      <div class="info-item"><span class="info-label">ALTITUDE</span><span class="info-val">1.000 — 10.000m</span></div>
+      <div class="info-item"><span class="info-label">MANOBRAS</span><span class="info-val red">EVASIVAS ● ANÔMALAS</span></div>
+      <div class="info-item"><span class="info-label">CONFIRMAÇÃO</span><span class="info-val amber">RADAR + VISUAL</span></div>
+      <div class="info-item"><span class="info-label">STATUS</span><span class="info-val red blink">CASO ABERTO</span></div>
+    </div>
+  </main>
+
+  <!-- RIGHT: REACT COMPONENTS -->
+  <aside class="right-panel">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('log',this)">LOG</button>
+      <button class="tab-btn" onclick="switchTab('witnesses',this)">TESTEMUNHOS</button>
+      <button class="tab-btn" onclick="switchTab('hyp',this)">HIPÓTESES</button>
+    </div>
+
+    <!-- Tab: Event Log (plain JS) -->
+    <div class="tab-panel active" id="tab-log">
+      <div class="log-box" id="logBox"></div>
+    </div>
+
+    <!-- Tab: Witnesses -->
+    <div class="tab-panel" id="tab-witnesses">
+      <div class="witness-list" id="witnessList"></div>
+    </div>
+
+    <!-- Tab: Hypotheses -->
+    <div class="tab-panel" id="tab-hyp">
+      <div class="hyp-list" id="hypList"></div>
+    </div>
+
+    <div class="classification">
+      <div class="class-status">STATUS: NÃO CLASSIFICADO / ABERTO</div>
+      <p class="class-text">
+        Evento registrado oficialmente pela FAB. Ministério reconheceu as perseguições em 1986.
+        Documentos parcialmente liberados em 2004. Em 2009, criado o SIFAA —
+        Sistema de Investigação de Fenômenos Aeroespaciais.
+      </p>
+    </div>
+  </aside>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeModalOuter(event)">
+  <div class="modal">
+    <div class="modal-pre">▶ DETALHE DO INCIDENTE — CLASSIFICADO</div>
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title" id="mTitle"></div>
+        <div class="modal-time"  id="mTime"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">[ ESC ]</button>
+    </div>
+    <div class="modal-lbl">RELATÓRIO</div>
+    <p class="modal-text" id="mDesc"></p>
+    <div class="modal-lbl">ANÁLISE</div>
+    <p class="modal-text modal-muted" id="mDetail"></p>
+    <div class="modal-foot">
+      <div class="modal-fitem"><span class="modal-flbl">LOCAL</span><span class="modal-fval" id="mLoc"></span></div>
+      <div class="modal-fitem"><span class="modal-flbl">CONFIRMADO</span><span class="modal-fval" style="color:#00ff88">SIM — OFICIAL</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT — Data + Render + Interactivity
+     ============================================================ -->
+<script>
+// ── TypeScript-annotated data (simulated via JS)
+// (In production this would be fetched from the Node.js API)
+
+/** @type {Array<{id:string,time:string,date:string,title:string,description:string,detail:string,severity:string,location:string}>} */
+const INCIDENTS = [
+  { id:'detect',     time:'20:00', date:'19/05/1986', severity:'medium',   location:'Vale do Paraíba — SP/RJ/MG',           title:'Primeiro Contato de Radar',          description:'O CINDACTA I detecta ecos de radar não identificados sobre o Vale do Paraíba. Velocidade anômala superior a 1.000 km/h.',       detail:'Velocidades superiores a 1.000 km/h em voo nivelado, movimentos abruptos e ausência de transponder. Incompatível com qualquer aeronave catalogada pela FAB.' },
+  { id:'spread',     time:'20:45', date:'19/05/1986', severity:'high',     location:'SP, RJ, MG',                            title:'Expansão dos Contatos',               description:'Estações de radar em SP, RJ e MG confirmam simultaneamente os mesmos objetos. 21 contatos distintos rastreados.',              detail:'A correlação entre diferentes estações eliminava hipótese de falha isolada de equipamento. Alguns objetos se moviam em formação.' },
+  { id:'scramble',   time:'21:15', date:'19/05/1986', severity:'critical', location:'Bases de Anápolis e Santa Cruz',        title:'Scramble de Caças',                   description:'Por ordem do Ministério da Aeronáutica, F-5E Tigers e Mirages III são despachados para interceptação.',                       detail:'13 aeronaves militares participaram. Um dos maiores deployments em tempo de paz da história da FAB — motivado por objetos não identificados.' },
+  { id:'chase',      time:'21:50', date:'19/05/1986', severity:'critical', location:'Espaço aéreo — Vale do Paraíba',        title:'Perseguição Aérea',                   description:'Pilotos confirmam visualmente os objetos. Comportamento evasivo e acelerações abruptas ao se aproximar dos caças.',             detail:'Cel. Ozires Silva confirmou o avistamento. Os objetos pareciam "aguardar" a aproximação para então fugir — comportamento interpretado como reativo e consciente.' },
+  { id:'loss',       time:'23:30', date:'19/05/1986', severity:'high',     location:'Todo o espaço aéreo afetado',           title:'Perda de Contato',                    description:'Todos os objetos desaparecem dos radares de forma quase simultânea. Caças retornam às bases sem interceptação.',                 detail:'O desaparecimento foi instantâneo — não havia gradual perda de sinal como ocorreria com aeronave convencional saindo do alcance.' },
+  { id:'disclosure', time:'—',     date:'1986–2009',  severity:'medium',   location:'Brasília — Ministério da Aeronáutica',  title:'Divulgação e Reconhecimento Oficial', description:'Min. Aeronáutica Brig. Sócrates Monteiro realiza coletiva reconhecendo publicamente o evento. Documentos liberados em 2004.',   detail:'Em 2009, a FAB criou o SIFAA fruto direto deste evento. Brasil tornou-se um dos poucos países a admitir oficialmente caso desse tipo.' },
+];
+
+/** @type {Array<{name:string,rank:string,role:string,quote:string,credibility:string,year:number}>} */
+const WITNESSES = [
+  { name:'Cel. Ozires Silva',               rank:'Coronel / Piloto',  role:'Ex-Presidente da Embraer',        credibility:'military',   year:1986, quote:'Eu vi com meus próprios olhos. Eram pontos de luz que se moviam em velocidades que nenhuma aeronave conhecida poderia alcançar.' },
+  { name:'Brig. Sócrates Monteiro',         rank:'Brigadeiro',        role:'Ministro da Aeronáutica em 1986', credibility:'government', year:1986, quote:'Os radares registraram objetos reais. Os pilotos confirmaram visualmente. O que eram, não sabemos responder.' },
+  { name:'Ten. Kleber Caldas Marinho',      rank:'Tenente',           role:'Piloto F-5E Tiger — FAB',         credibility:'military',   year:1986, quote:'Quando me aproximei, o objeto simplesmente acelerou e desapareceu. Não havia explicação técnica para aquilo.' },
+  { name:'Brig. Ary Bhattaria de Azambuja', rank:'Brigadeiro',        role:'Oficial FAB — Relações Imprensa', credibility:'military',   year:1986, quote:'Posso afirmar categoricamente: houve perseguições reais naquela noite. Temos os registros. Os pilotos são profissionais sérios.' },
+];
+
+/** @type {Array<{title:string,probability:number,status:string,description:string,evidence:string[]}>} */
+const HYPOTHESES = [
+  { title:'Fenômenos Atmosféricos',         probability:38, status:'likely',   description:'Inversão térmica ou reflexões anômalas na atmosfera poderiam gerar ecos falsos nos radares da época.',           evidence:['Condições climáticas anômalas naquela noite','Histórico de falsos positivos em radares de 1ª geração','Comportamento compatível com turbulência'] },
+  { title:'Erro de Interpretação de Radar', probability:27, status:'possible', description:'Radares militares dos anos 80 eram susceptíveis a artefatos. Balões e pássaros podem gerar ecos amplificados.', evidence:['Limitações conhecidas dos radares da época','Ausência de evidências físicas','Impossibilidade de confirmação espectroscópica'] },
+  { title:'Lixo Espacial / Meteoros',       probability:20, status:'possible', description:'Fragmentos de satélites em reentrada poderiam explicar as altas velocidades e luminosidade intensa.',            evidence:['Velocidades compatíveis com reentrada','Luminosidade descrita por pilotos','Ausência de material no solo'] },
+  { title:'Aeronave Experimental',           probability:10, status:'unlikely', description:'Programa norte-americano de aeronaves experimentais sobre o Brasil durante a Guerra Fria.',                     evidence:['EUA tinha programas secretos ativos em 1986','Brasil era estratégico geopoliticamente','Manobras sugerem controle inteligente'] },
+  { title:'Fenômeno Inexplicado',            probability:5,  status:'unknown',  description:'Nenhuma hipótese convencional conseguiu explicar todos os aspectos documentados simultaneamente.',               evidence:['Confirmação simultânea radar + visual','Comportamento reativo aos caças','Desaparecimento instantâneo','Reconhecimento oficial sem explicação'] },
+];
+
+const LOGS = [
+  ['20:00','CINDACTA-I detecta 1º contato anômalo sobre o Vale do Paraíba','info'],
+  ['20:12','ALERTA — objeto sem transponder ativo detectado','alert'],
+  ['20:34','Segundo radar confirma eco em mesma posição — descartada falha isolada','info'],
+  ['20:45','MÚLTIPLOS OBJETOS — 7 contatos simultâneos identificados','alert'],
+  ['21:00','Velocidade > 1.000 km/h — aeronave convencional descartada','alert'],
+  ['21:15','SCRAMBLE AUTORIZADO — F-5E Tigers e Mirage III vetorizados','critical'],
+  ['21:30','Contato visual confirmado — Cel. Ozires Silva a bordo de jato executivo','confirm'],
+  ['21:48','Objeto efetua manobra evasiva ao se aproximar do caça interceptador','alert'],
+  ['22:10','PERDA DE CONTATO — objeto desaparece instantaneamente do radar','critical'],
+  ['22:20','Novo contato 200km ao sul — velocidade estimada > 2.000 km/h','critical'],
+  ['22:55','13 caças em atividade — nenhuma interceptação bem-sucedida','alert'],
+  ['23:30','TODOS OS OBJETOS desaparecem dos radares simultaneamente','critical'],
+  ['23:45','Caças retornam às bases. Incidente documentado. Status: ABERTO','confirm'],
+];
+
+// ── RENDER TIMELINE ──────────────────────────────────────────
+const tl = document.getElementById('timeline');
+INCIDENTS.forEach(inc => {
+  const btn = document.createElement('button');
+  btn.className = `tl-item ${inc.severity}`;
+  btn.innerHTML = `
+    <div class="tl-time">${inc.time}</div>
+    <div>
+      <div class="tl-title">${inc.title}</div>
+      <div class="tl-desc">${inc.description.substring(0,80)}…</div>
+    </div>`;
+  btn.onclick = () => openModal(inc);
+  tl.appendChild(btn);
+});
+
+// ── RENDER LOG ───────────────────────────────────────────────
+const logBox = document.getElementById('logBox');
+LOGS.forEach(([ts, msg, lvl]) => {
+  const d = document.createElement('div');
+  d.className = `log-entry ${lvl}`;
+  d.innerHTML = `<span class="log-ts">${ts}</span>${msg}`;
+  logBox.appendChild(d);
+});
+logBox.scrollTop = logBox.scrollHeight;
+
+// ── RENDER WITNESSES ─────────────────────────────────────────
+const wl = document.getElementById('witnessList');
+WITNESSES.forEach(w => {
+  const initials = w.name.split(' ').filter((_,i,a)=>i===0||i===a.length-1).map(p=>p[0]).join('');
+  const card = document.createElement('div');
+  card.className = 'witness-card';
+  card.innerHTML = `
+    <div class="w-head">
+      <div class="w-avatar">${initials}</div>
+      <div style="flex:1">
+        <div class="w-name">${w.name}</div>
+        <div class="w-rank">${w.rank}</div>
+        <div class="w-role">${w.role}</div>
+      </div>
+      <span class="w-cred ${w.credibility}">${w.credibility.toUpperCase()}</span>
+    </div>
+    <div class="w-quote">"${w.quote}"</div>
+    <div class="w-year">${w.year}</div>`;
+  wl.appendChild(card);
+});
+
+// ── RENDER HYPOTHESES ────────────────────────────────────────
+const barColors = { likely:'#00cc66', possible:'#ffb800', unlikely:'#006633', unknown:'#ff3a3a' };
+const hl = document.getElementById('hypList');
+HYPOTHESES.forEach(h => {
+  const color = barColors[h.status] || '#00cc66';
+  const item = document.createElement('div');
+  item.className = 'hyp-item';
+  item.innerHTML = `
+    <div class="hyp-row">
+      <span class="hyp-title-t">${h.title}</span>
+      <span class="hyp-pct" style="color:${color}">${h.probability}%</span>
+    </div>
+    <div class="hyp-bar"><div class="hyp-fill" style="width:${h.probability}%;background:${color}"></div></div>`;
+  hl.appendChild(item);
+});
+
+// ── RADAR — JavaScript animation ────────────────────────────
+const BLIP_DATA = [
+  {cx:250,cy:140,r:5,fill:'#00ff88'},{cx:278,cy:155,r:4,fill:'#00ff88'},
+  {cx:232,cy:165,r:5,fill:'#00ff88'},{cx:295,cy:130,r:4,fill:'#ffb800'},
+  {cx:310,cy:148,r:3,fill:'#ffb800'},{cx:265,cy:175,r:4,fill:'#00ff88'},
+  {cx:240,cy:125,r:6,fill:'#ff3a3a'},{cx:220,cy:158,r:5,fill:'#ff3a3a'},
+];
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const blipsGroup = document.getElementById('blipsGroup');
+const blipEls = BLIP_DATA.map((b, i) => {
+  const el = document.createElementNS(SVG_NS, 'circle');
+  el.setAttribute('cx', b.cx); el.setAttribute('cy', b.cy);
+  el.setAttribute('r', b.r); el.setAttribute('fill', b.fill);
+  el.style.animationDelay = `${-i * 0.6}s`;
+  el.style.animation = 'blipFade 4s ease-out infinite';
+  el.style.animationDelay = `${-(i * 0.55)}s`;
+  blipsGroup.appendChild(el);
+  return el;
+});
+
+const sweepGroup = document.getElementById('sweepGroup');
+const jet1 = document.getElementById('jet1');
+const jet2 = document.getElementById('jet2');
+let sweepAngle = 0, jetT = 0;
+
+function animateRadar() {
+  sweepAngle = (sweepAngle + 0.5) % 360;
+  sweepGroup.setAttribute('transform', `rotate(${sweepAngle},210,210)`);
+
+  // Animate jets along pursuit trail
+  jetT = (jetT + 0.004) % 1;
+  const t1 = jetT, t2 = (jetT + 0.3) % 1;
+  const j1x = 210 + (250-210)*t1, j1y = 310 + (140-310)*t1;
+  const j2x = 240 + (278-240)*t2, j2y = 320 + (155-320)*t2;
+  jet1.setAttribute('transform', `translate(${j1x-210},${j1y-305})`);
+  jet2.setAttribute('transform', `translate(${j2x-240},${j2y-315})`);
+
+  requestAnimationFrame(animateRadar);
+}
+requestAnimationFrame(animateRadar);
+
+// ── CLOCK ─────────────────────────────────────────────────────
+function updateClock() {
+  document.getElementById('clockDisplay').textContent =
+    new Date().toLocaleTimeString('pt-BR', { hour12: false });
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ── MODAL ─────────────────────────────────────────────────────
+function openModal(inc) {
+  document.getElementById('mTitle').textContent  = inc.title;
+  document.getElementById('mTime').textContent   = `${inc.time}h  —  ${inc.date}`;
+  document.getElementById('mDesc').textContent   = inc.description;
+  document.getElementById('mDetail').textContent = inc.detail;
+  document.getElementById('mLoc').textContent    = inc.location;
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+function closeModalOuter(e) { if (e.target.id === 'overlay') closeModal(); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ── TABS ──────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── ANIMATED COUNTER ─────────────────────────────────────────
+// (simulates a Node.js API response counter update)
+let countDir = 1;
+setInterval(() => {
+  const el = document.getElementById('objCount');
+  // Simulate radar contacts appearing and disappearing (as in the real 1986 event)
+  const val = parseInt(el.textContent);
+  if (val >= 21) countDir = -1;
+  if (val <= 17) countDir = 1;
+  el.textContent = val + countDir;
+}, 2500);
+</script>
+
+<!-- ============================================================
+     REACT — Stats component rendered via Babel JSX
+     ============================================================ -->
+<script type="text/babel">
+  // React + TypeScript-style component (types simulated via JSDoc in plain JS)
+  // Demonstrating: React hooks, functional components, TypeScript-like annotations
+
+  /**
+   * @typedef {{ objectsDetected: number, fightersDeployed: number, durationHours: number, statesAffected: number, radarStations: number, maxSpeedKmh: number }} StatsData
+   */
+
+  /** @param {{ value: string|number, label: string, color: string }} props */
+  const StatCard = ({ value, label, color }) => (
+    <div className="stat-card">
+      <span className="stat-num" style={{ color }}>{value}</span>
+      <span className="stat-lbl">{label}</span>
+    </div>
+  );
+
+  /** @returns {StatsData} */
+  function useFakeNodeApiStats() {
+    const [stats, setStats] = React.useState(null);
+    React.useEffect(() => {
+      // Simulates: fetch('http://localhost:3001/api/stats').then(r => r.json())
+      const fakeApiResponse = {
+        objectsDetected: 21, fightersDeployed: 13, durationHours: 5,
+        statesAffected: 3, radarStations: 4, maxSpeedKmh: 2500,
+      };
+      const timer = setTimeout(() => setStats(fakeApiResponse), 600);
+      return () => clearTimeout(timer);
+    }, []);
+    return stats;
+  }
+
+  const StatsSection = () => {
+    const stats = useFakeNodeApiStats();
+
+    if (!stats) return (
+      <div style={{ fontSize: '.55rem', color: '#006633', letterSpacing: '2px' }}>
+        ▶ CONECTANDO AO NODE.JS API…
+      </div>
+    );
+
+    return (
+      <div>
+        <div className="react-badge">⚛ REACT 18 + HOOKS</div>
+        <div className="section-hd">▶ Parâmetros do Incidente</div>
+        <div className="stats-grid">
+          <StatCard value={stats.objectsDetected}  label="Objetos detectados"  color="#ff3a3a"/>
+          <StatCard value={stats.fightersDeployed} label="Caças despachados"   color="#ffb800"/>
+          <StatCard value={stats.durationHours+'h'}label="Duração"             color="#00ff88"/>
+          <StatCard value={stats.statesAffected}   label="Estados afetados"    color="#cc88ff"/>
+          <StatCard value={stats.radarStations}    label="Estações de radar"   color="#00ff88"/>
+          <StatCard value={'>'+stats.maxSpeedKmh.toLocaleString('pt-BR')}label="Vel. máx. km/h" color="#ff3a3a"/>
+        </div>
+      </div>
+    );
+  };
+
+  // Mount React component into the DOM
+  const reactRoot = ReactDOM.createRoot(document.getElementById('react-stats-root'));
+  reactRoot.render(<StatsSection />);
+</script>
+
+</body>
+</html>
